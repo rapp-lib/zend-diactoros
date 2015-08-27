@@ -54,23 +54,23 @@ class MessageTraitTest extends TestCase
 
     public function testGetHeaderReturnsHeaderValueAsArray()
     {
-        $message = $this->message->withHeader('X-Foo', ['Foo', 'Bar']);
+        $message = $this->message->withHeader('X-Foo', array('Foo', 'Bar'));
         $this->assertNotSame($this->message, $message);
-        $this->assertEquals(['Foo', 'Bar'], $message->getHeader('X-Foo'));
+        $this->assertEquals(array('Foo', 'Bar'), $message->getHeader('X-Foo'));
     }
 
     public function testGetHeaderLineReturnsHeaderValueAsCommaConcatenatedString()
     {
-        $message = $this->message->withHeader('X-Foo', ['Foo', 'Bar']);
+        $message = $this->message->withHeader('X-Foo', array('Foo', 'Bar'));
         $this->assertNotSame($this->message, $message);
         $this->assertEquals('Foo,Bar', $message->getHeaderLine('X-Foo'));
     }
 
     public function testGetHeadersKeepsHeaderCaseSensitivity()
     {
-        $message = $this->message->withHeader('X-Foo', ['Foo', 'Bar']);
+        $message = $this->message->withHeader('X-Foo', array('Foo', 'Bar'));
         $this->assertNotSame($this->message, $message);
-        $this->assertEquals([ 'X-Foo' => [ 'Foo', 'Bar' ] ], $message->getHeaders());
+        $this->assertEquals(array('X-Foo' => array('Foo', 'Bar')), $message->getHeaders());
     }
 
     public function testGetHeadersReturnsCaseWithWhichHeaderFirstRegistered()
@@ -79,7 +79,7 @@ class MessageTraitTest extends TestCase
             ->withHeader('X-Foo', 'Foo')
             ->withAddedHeader('x-foo', 'Bar');
         $this->assertNotSame($this->message, $message);
-        $this->assertEquals([ 'X-Foo' => [ 'Foo', 'Bar' ] ], $message->getHeaders());
+        $this->assertEquals(array('X-Foo' => array('Foo', 'Bar')), $message->getHeaders());
     }
 
     public function testHasHeaderReturnsFalseIfHeaderIsNotPresent()
@@ -134,15 +134,15 @@ class MessageTraitTest extends TestCase
 
     public function invalidGeneralHeaderValues()
     {
-        return [
-            'null'   => [null],
-            'true'   => [true],
-            'false'  => [false],
-            'int'    => [1],
-            'float'  => [1.1],
-            'array'  => [[ 'foo' => [ 'bar' ] ]],
-            'object' => [(object) [ 'foo' => 'bar' ]],
-        ];
+        return array(
+            'null'   => array(null),
+            'true'   => array(true),
+            'false'  => array(false),
+            'int'    => array(1),
+            'float'  => array(1.1),
+            'array'  => array(array('foo' => array('bar'))),
+            'object' => array((object) array('foo' => 'bar')),
+        );
     }
 
     /**
@@ -151,19 +151,19 @@ class MessageTraitTest extends TestCase
     public function testWithHeaderRaisesExceptionForInvalidNestedHeaderValue($value)
     {
         $this->setExpectedException('InvalidArgumentException', 'Invalid header value');
-        $message = $this->message->withHeader('X-Foo', [ $value ]);
+        $message = $this->message->withHeader('X-Foo', array($value));
     }
 
     public function invalidHeaderValues()
     {
-        return [
-            'null'   => [null],
-            'true'   => [true],
-            'false'  => [false],
-            'int'    => [1],
-            'float'  => [1.1],
-            'object' => [(object) [ 'foo' => 'bar' ]],
-        ];
+        return array(
+            'null'   => array(null),
+            'true'   => array(true),
+            'false'  => array(false),
+            'int'    => array(1),
+            'float'  => array(1.1),
+            'object' => array((object) array('foo' => 'bar')),
+        );
     }
 
     /**
@@ -194,14 +194,14 @@ class MessageTraitTest extends TestCase
 
     public function testHeadersInitialization()
     {
-        $headers = ['X-Foo' => ['bar']];
+        $headers = array('X-Foo' => array('bar'));
         $message = new Request(null, null, 'php://temp', $headers);
         $this->assertSame($headers, $message->getHeaders());
     }
 
     public function testGetHeaderReturnsAnEmptyArrayWhenHeaderDoesNotExist()
     {
-        $this->assertSame([], $this->message->getHeader('X-Foo-Bar'));
+        $this->assertSame(array(), $this->message->getHeader('X-Foo-Bar'));
     }
 
     public function testGetHeaderLineReturnsEmptyStringWhenHeaderDoesNotExist()
@@ -211,20 +211,20 @@ class MessageTraitTest extends TestCase
 
     public function headersWithInjectionVectors()
     {
-        return [
-            'name-with-cr'           => ["X-Foo\r-Bar", 'value'],
-            'name-with-lf'           => ["X-Foo\n-Bar", 'value'],
-            'name-with-crlf'         => ["X-Foo\r\n-Bar", 'value'],
-            'name-with-2crlf'        => ["X-Foo\r\n\r\n-Bar", 'value'],
-            'value-with-cr'          => ['X-Foo-Bar', "value\rinjection"],
-            'value-with-lf'          => ['X-Foo-Bar', "value\ninjection"],
-            'value-with-crlf'        => ['X-Foo-Bar', "value\r\ninjection"],
-            'value-with-2crlf'       => ['X-Foo-Bar', "value\r\n\r\ninjection"],
-            'array-value-with-cr'    => ['X-Foo-Bar', ["value\rinjection"]],
-            'array-value-with-lf'    => ['X-Foo-Bar', ["value\ninjection"]],
-            'array-value-with-crlf'  => ['X-Foo-Bar', ["value\r\ninjection"]],
-            'array-value-with-2crlf' => ['X-Foo-Bar', ["value\r\n\r\ninjection"]],
-        ];
+        return array(
+            'name-with-cr'           => array("X-Foo\r-Bar", 'value'),
+            'name-with-lf'           => array("X-Foo\n-Bar", 'value'),
+            'name-with-crlf'         => array("X-Foo\r\n-Bar", 'value'),
+            'name-with-2crlf'        => array("X-Foo\r\n\r\n-Bar", 'value'),
+            'value-with-cr'          => array('X-Foo-Bar', "value\rinjection"),
+            'value-with-lf'          => array('X-Foo-Bar', "value\ninjection"),
+            'value-with-crlf'        => array('X-Foo-Bar', "value\r\ninjection"),
+            'value-with-2crlf'       => array('X-Foo-Bar', "value\r\n\r\ninjection"),
+            'array-value-with-cr'    => array('X-Foo-Bar', array("value\rinjection")),
+            'array-value-with-lf'    => array('X-Foo-Bar', array("value\ninjection")),
+            'array-value-with-crlf'  => array('X-Foo-Bar', array("value\r\ninjection")),
+            'array-value-with-2crlf' => array('X-Foo-Bar', array("value\r\n\r\ninjection")),
+        );
     }
 
     /**

@@ -39,7 +39,7 @@ class ServerRequestTest extends TestCase
 
     public function testQueryParamsMutatorReturnsCloneWithChanges()
     {
-        $value = ['foo' => 'bar'];
+        $value = array('foo' => 'bar');
         $request = $this->request->withQueryParams($value);
         $this->assertNotSame($this->request, $request);
         $this->assertEquals($value, $request->getQueryParams());
@@ -52,7 +52,7 @@ class ServerRequestTest extends TestCase
 
     public function testCookiesMutatorReturnsCloneWithChanges()
     {
-        $value = ['foo' => 'bar'];
+        $value = array('foo' => 'bar');
         $request = $this->request->withCookieParams($value);
         $this->assertNotSame($this->request, $request);
         $this->assertEquals($value, $request->getCookieParams());
@@ -70,7 +70,7 @@ class ServerRequestTest extends TestCase
 
     public function testParsedBodyMutatorReturnsCloneWithChanges()
     {
-        $value = ['foo' => 'bar'];
+        $value = array('foo' => 'bar');
         $request = $this->request->withParsedBody($value);
         $this->assertNotSame($this->request, $request);
         $this->assertEquals($value, $request->getParsedBody());
@@ -108,11 +108,11 @@ class ServerRequestTest extends TestCase
 
     public function provideMethods()
     {
-        return [
-            'post' => ['POST', 'POST'],
-            'get'  => ['GET', 'GET'],
-            'null' => [null, 'GET'],
-        ];
+        return array(
+            'post' => array('POST', 'POST'),
+            'get'  => array('GET', 'GET'),
+            'null' => array(null, 'GET'),
+        );
     }
 
     /**
@@ -120,21 +120,21 @@ class ServerRequestTest extends TestCase
      */
     public function testUsesProvidedConstructorArguments($parameterMethod, $methodReturned)
     {
-        $server = [
+        $server = array(
             'foo' => 'bar',
             'baz' => 'bat',
-        ];
+        );
 
         $server['server'] = true;
 
-        $files = [
+        $files = array(
             'files' => new UploadedFile('php://temp', 0, 0),
-        ];
+        );
 
         $uri = new Uri('http://example.com');
-        $headers = [
-            'host' => ['example.com'],
-        ];
+        $headers = array(
+            'host' => array('example.com'),
+        );
 
         $request = new ServerRequest(
             $server,
