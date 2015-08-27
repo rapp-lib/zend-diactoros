@@ -16,13 +16,13 @@ class JsonResponseTest extends TestCase
 {
     public function testConstructorAcceptsDataAndCreatesJsonEncodedMessageBody()
     {
-        $data = [
-            'nested' => [
-                'json' => [
+        $data = array(
+            'nested' => array(
+                'json' => array(
                     'tree',
-                ],
-            ],
-        ];
+                ),
+            ),
+        );
         $json = '{"nested":{"json":["tree"]}}';
 
         $response = new JsonResponse($data);
@@ -33,17 +33,17 @@ class JsonResponseTest extends TestCase
 
     public function scalarValuesForJSON()
     {
-        return [
-            'null'         => [null],
-            'false'        => [false],
-            'true'         => [true],
-            'zero'         => [0],
-            'int'          => [1],
-            'zero-float'   => [0.0],
-            'float'        => [1.1],
-            'empty-string' => [''],
-            'string'       => ['string'],
-        ];
+        return array(
+            'null'         => array(null),
+            'false'        => array(false),
+            'true'         => array(true),
+            'zero'         => array(0),
+            'int'          => array(1),
+            'zero-float'   => array(0.0),
+            'float'        => array(1.1),
+            'empty-string' => array(''),
+            'string'       => array('string'),
+        );
     }
 
     /**
@@ -66,7 +66,7 @@ class JsonResponseTest extends TestCase
 
     public function testCanProvideAlternateContentTypeViaHeadersPassedToConstructor()
     {
-        $response = new JsonResponse(null, 200, ['content-type' => 'foo/json']);
+        $response = new JsonResponse(null, 200, array('content-type' => 'foo/json'));
         $this->assertEquals('foo/json', $response->getHeaderLine('content-type'));
     }
 
@@ -80,6 +80,9 @@ class JsonResponseTest extends TestCase
         new JsonResponse($resource);
     }
 
+  /**
+   *
+   */
     public function testJsonErrorHandlingOfBadEmbeddedData()
     {
         if (version_compare(PHP_VERSION, '5.5', 'lt')) {
@@ -91,9 +94,9 @@ class JsonResponseTest extends TestCase
         }
 
         // Serializing something that is not serializable.
-        $data = [
+        $data = array(
             'stream' => fopen('php://memory', 'r'),
-        ];
+        );
 
         $this->setExpectedException('InvalidArgumentException', 'Unable to encode');
         new JsonResponse($data);

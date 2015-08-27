@@ -41,10 +41,10 @@ class Uri implements UriInterface
     /**
      * @var int[] Array indexed by valid scheme names to their corresponding ports.
      */
-    protected $allowedSchemes = [
+    protected $allowedSchemes = array(
         'http'  => 80,
         'https' => 443,
-    ];
+    );
 
     /**
      * @var string
@@ -552,7 +552,7 @@ class Uri implements UriInterface
     {
         $path = preg_replace_callback(
             '/(?:[^' . self::CHAR_UNRESERVED . ':@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'urlEncodeChar'],
+            array($this, 'urlEncodeChar'),
             $path
         );
 
@@ -641,7 +641,7 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . '%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'urlEncodeChar'],
+            array($this, 'urlEncodeChar'),
             $value
         );
     }

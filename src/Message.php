@@ -10,6 +10,7 @@
 namespace Zend\Diactoros;
 
 use InvalidArgumentException;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -17,21 +18,21 @@ use Psr\Http\Message\StreamInterface;
  *
  * @see https://github.com/php-fig/http-message/tree/master/src/MessageInterface.php
  */
-trait MessageTrait
+class Message implements MessageInterface
 {
     /**
      * List of all registered headers, as key => array of values.
      *
      * @var array
      */
-    protected $headers = [];
+    protected $headers = array();
 
     /**
      * Map of normalized header name to original name used to register header.
      *
      * @var array
      */
-    protected $headerNames = [];
+    protected $headerNames = array();
 
     /**
      * @var string
@@ -42,6 +43,39 @@ trait MessageTrait
      * @var StreamInterface
      */
     private $stream;
+
+
+    public function __construct($body = 'php://memory', $headers = array())
+    {
+        $this->initialize($body, $headers);
+    }
+
+    /**
+     * Initialize request state.
+     *
+     * Used by constructors.
+     *
+     * @param null|string $uri URI for the request, if any.
+     * @param null|string $method HTTP method for the request, if any.
+     * @param string|resource|StreamInterface $body Message body, if any.
+     * @param array $headers Headers for the message, if any.
+     * @throws InvalidArgumentException for any invalid value.
+     */
+    private function initialize($body = 'php://memory', array $headers = array())
+    {
+        if (! is_string($body) && ! is_resource($body) && ! $body instanceof StreamInterface) {
+            throw new InvalidArgumentException(
+                'Body must be a string stream resource identifier, '
+                . 'an actual stream resource, '
+                . 'or a Psr\Http\Message\StreamInterface implementation'
+            );
+        }
+
+        $this->stream = ($body instanceof StreamInterface) ? $body : new Stream($body, 'wb+');
+        list($this->headerNames, $headers) = $this->filterHeaders($headers);
+        $this->assertHeaders($headers);
+        $this->headers = $headers;
+    }
 
     /**
      * Retrieves the HTTP protocol version as a string.
@@ -131,12 +165,12 @@ trait MessageTrait
     public function getHeader($header)
     {
         if (! $this->hasHeader($header)) {
-            return [];
+            return array();
         }
 
         $header = $this->headerNames[strtolower($header)];
         $value  = $this->headers[$header];
-        $value  = is_array($value) ? $value : [$value];
+        $value  = is_array($value) ? $value : array($value);
 
         return $value;
     }
@@ -189,7 +223,7 @@ trait MessageTrait
     public function withHeader($header, $value)
     {
         if (is_string($value)) {
-            $value = [$value];
+            $value = array($value);
         }
 
         if (! is_array($value) || ! $this->arrayContainsOnlyStrings($value)) {
@@ -230,7 +264,7 @@ trait MessageTrait
     public function withAddedHeader($header, $value)
     {
         if (is_string($value)) {
-            $value = [ $value ];
+            $value = array($value);
         }
 
         if (! is_array($value) || ! $this->arrayContainsOnlyStrings($value)) {
@@ -318,7 +352,7 @@ trait MessageTrait
      */
     private function arrayContainsOnlyStrings(array $array)
     {
-        return array_reduce($array, [__CLASS__, 'filterStringValue'], true);
+        return array_reduce($array, array(__CLASS__, 'filterStringValue'), true);
     }
 
     /**
@@ -331,7 +365,7 @@ trait MessageTrait
      */
     private function filterHeaders(array $originalHeaders)
     {
-        $headerNames = $headers = [];
+        $headerNames = $headers = array();
         foreach ($originalHeaders as $header => $value) {
             if (! is_string($header)) {
                 continue;
@@ -342,14 +376,14 @@ trait MessageTrait
             }
 
             if (! is_array($value)) {
-                $value = [ $value ];
+                $value = array($value);
             }
 
             $headerNames[strtolower($header)] = $header;
             $headers[$header] = $value;
         }
 
-        return [$headerNames, $headers];
+        return array($headerNames, $headers);
     }
 
     /**
@@ -379,5 +413,20 @@ trait MessageTrait
     private static function assertValidHeaderValue(array $values)
     {
         array_walk($values, __NAMESPACE__ . '\HeaderSecurity::assertValid');
+    }
+
+
+    /**
+     * Ensure header names and values are valid.
+     *
+     * @param array $headers
+     * @throws InvalidArgumentException
+     */
+    private function assertHeaders(array $headers)
+    {
+        foreach ($headers as $name => $headerValues) {
+            HeaderSecurity::assertValidName($name);
+            array_walk($headerValues, __NAMESPACE__ . '\HeaderSecurity::assertValid');
+        }
     }
 }

@@ -87,14 +87,14 @@ class ServerTest extends TestCase
 
     public function testCreateServerWillCreateDefaultInstancesForRequestAndResponse()
     {
-        $server = [
+        $server = array(
             'HTTP_HOST' => 'example.com',
             'HTTP_ACCEPT' => 'application/json',
             'REQUEST_METHOD' => 'POST',
             'REQUEST_URI' => '/foo/bar',
             'QUERY_STRING' => 'bar=baz',
-        ];
-        $server = Server::createServer($this->callback, $server, [], [], [], []);
+        );
+        $server = Server::createServer($this->callback, $server, array(), array(), array(), array());
         $this->assertInstanceOf('Zend\Diactoros\Server', $server);
         $this->assertSame($this->callback, $server->callback);
 
@@ -109,20 +109,20 @@ class ServerTest extends TestCase
 
     public function testListenInvokesCallbackAndSendsResponse()
     {
-        $server = [
+        $server = array(
             'HTTP_HOST' => 'example.com',
             'HTTP_ACCEPT' => 'application/json',
             'REQUEST_METHOD' => 'POST',
             'REQUEST_URI' => '/foo/bar',
             'QUERY_STRING' => 'bar=baz',
-        ];
+        );
 
         $callback = function ($req, $res) {
             $res = $res->withAddedHeader('Content-Type', 'text/plain');
             $res->getBody()->write('FOOBAR');
             return $res;
         };
-        $server = Server::createServer($callback, $server, [], [], [], []);
+        $server = Server::createServer($callback, $server, array(), array(), array(), array());
 
         $this->expectOutputString('FOOBAR');
         $server->listen();
@@ -134,13 +134,13 @@ class ServerTest extends TestCase
 
     public function testListenEmitsStatusHeaderWithoutReasonPhraseIfNoReasonPhrase()
     {
-        $server = [
+        $server = array(
             'HTTP_HOST' => 'example.com',
             'HTTP_ACCEPT' => 'application/json',
             'REQUEST_METHOD' => 'POST',
             'REQUEST_URI' => '/foo/bar',
             'QUERY_STRING' => 'bar=baz',
-        ];
+        );
 
         $callback = function (ServerRequestInterface $req, ResponseInterface $res) {
             $res = $res->withStatus(299);
@@ -148,7 +148,7 @@ class ServerTest extends TestCase
             $res->getBody()->write('FOOBAR');
             return $res;
         };
-        $server = Server::createServer($callback, $server, [], [], [], []);
+        $server = Server::createServer($callback, $server, array(), array(), array(), array());
 
         $this->expectOutputString('FOOBAR');
         $server->listen();
@@ -160,20 +160,20 @@ class ServerTest extends TestCase
 
     public function testEnsurePercentCharactersDoNotResultInOutputError()
     {
-        $server = [
+        $server = array(
             'HTTP_HOST' => 'example.com',
             'HTTP_ACCEPT' => 'application/json',
             'REQUEST_METHOD' => 'POST',
             'REQUEST_URI' => '/foo/bar',
             'QUERY_STRING' => 'bar=baz',
-        ];
+        );
 
         $callback = function (ServerRequestInterface $req, ResponseInterface $res) {
             $res = $res->withAddedHeader('Content-Type', 'text/plain');
             $res->getBody()->write('100%');
             return $res;
         };
-        $server = Server::createServer($callback, $server, [], [], [], []);
+        $server = Server::createServer($callback, $server, array(), array(), array(), array());
 
         $this->expectOutputString('100%');
         $server->listen();
@@ -185,11 +185,11 @@ class ServerTest extends TestCase
 
     public function testEmitsHeadersWithMultipleValuesMultipleTimes()
     {
-        $server = [
+        $server = array(
             'HTTP_HOST' => 'example.com',
             'REQUEST_METHOD' => 'GET',
             'REQUEST_URI' => '/foo/bar',
-        ];
+        );
 
         $callback = function (ServerRequestInterface $req, ResponseInterface $res) {
             $res = $res->withAddedHeader('Content-Type', 'text/plain');
@@ -203,7 +203,7 @@ class ServerTest extends TestCase
             );
             return $res;
         };
-        $server = Server::createServer($callback, $server, [], [], [], []);
+        $server = Server::createServer($callback, $server, array(), array(), array(), array());
 
         $server->listen();
         ob_end_flush();
@@ -251,7 +251,7 @@ class ServerTest extends TestCase
         $this->response
             ->expects($this->once())
             ->method('getHeaders')
-            ->will($this->returnValue([]));
+            ->will($this->returnValue(array()));
 
         $final = function ($req, $res, $err = null) use ($phpunit, $request, $response, &$invoked) {
             $phpunit->assertSame($request, $req);
@@ -259,7 +259,10 @@ class ServerTest extends TestCase
             $invoked = true;
         };
 
-        $callback = function ($req, $res, callable $final = null) use ($phpunit) {
+        $callback = function ($req, $res, $final = null) use ($phpunit) {
+            if (null !== $final && !is_callable($final)) {
+                    throw new \RuntimeException('Parameter "callback" must be of type callable.');
+            }
             if (! $final) {
                 $phpunit->fail('No final callable passed!');
             }

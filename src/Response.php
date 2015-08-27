@@ -22,14 +22,17 @@ use Psr\Http\Message\StreamInterface;
  */
 class Response implements ResponseInterface
 {
-    use MessageTrait;
+    /**
+     * @var Message
+     */
+    private $message;
 
     /**
      * Map of standard HTTP status code/reason phrases
      *
      * @var array
      */
-    private $phrases = [
+    private $phrases = array(
         // INFORMATIONAL CODES
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -92,7 +95,7 @@ class Response implements ResponseInterface
         507 => 'Insufficient Storage',
         508 => 'Loop Detected',
         511 => 'Network Authentication Required',
-    ];
+    );
 
     /**
      * @var string
@@ -105,31 +108,19 @@ class Response implements ResponseInterface
     private $statusCode = 200;
 
     /**
-     * @param string|resource|StreamInterface $stream Stream identifier and/or actual stream resource
+     * @param string|resource|StreamInterface $body Stream identifier and/or actual stream resource
      * @param int $status Status code for the response, if any.
      * @param array $headers Headers for the response, if any.
      * @throws InvalidArgumentException on any invalid element.
      */
-    public function __construct($body = 'php://memory', $status = 200, array $headers = [])
+    public function __construct($body = 'php://memory', $status = 200, array $headers = array())
     {
-        if (! is_string($body) && ! is_resource($body) && ! $body instanceof StreamInterface) {
-            throw new InvalidArgumentException(
-                'Stream must be a string stream resource identifier, '
-                . 'an actual stream resource, '
-                . 'or a Psr\Http\Message\StreamInterface implementation'
-            );
-        }
 
         if (null !== $status) {
             $this->validateStatus($status);
         }
-
-        $this->stream     = ($body instanceof StreamInterface) ? $body : new Stream($body, 'wb+');
+        $this->message = new Message($body, $headers);
         $this->statusCode = $status ? (int) $status : 200;
-
-        list($this->headerNames, $headers) = $this->filterHeaders($headers);
-        $this->assertHeaders($headers);
-        $this->headers = $headers;
     }
 
     /**
@@ -186,17 +177,68 @@ class Response implements ResponseInterface
         }
     }
 
-    /**
-     * Ensure header names and values are valid.
-     *
-     * @param array $headers
-     * @throws InvalidArgumentException
-     */
-    private function assertHeaders(array $headers)
+    public function getProtocolVersion()
     {
-        foreach ($headers as $name => $headerValues) {
-            HeaderSecurity::assertValidName($name);
-            array_walk($headerValues, __NAMESPACE__ . '\HeaderSecurity::assertValid');
-        }
+        return $this->message->getProtocolVersion();
+    }
+
+    public function withProtocolVersion($version)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withProtocolVersion($version);
+        return $new;
+    }
+
+    public function getHeaders()
+    {
+        return $this->message->getHeaders();
+    }
+
+    public function hasHeader($name)
+    {
+        return $this->message->hasHeader($name);
+    }
+
+    public function getHeader($name)
+    {
+        return $this->message->getHeader($name);
+    }
+
+    public function getHeaderLine($name)
+    {
+        return $this->message->getHeaderLine($name);
+    }
+
+    public function withHeader($name, $value)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withHeader($name, $value);
+        return $new;
+    }
+
+    public function withAddedHeader($name, $value)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withAddedHeader($name, $value);
+        return $new;
+    }
+
+    public function withoutHeader($name)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withoutHeader($name);
+        return $new;
+    }
+
+    public function getBody()
+    {
+        return $this->message->getBody();
+    }
+
+    public function withBody(StreamInterface $body)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withBody($body);
+        return $new;
     }
 }

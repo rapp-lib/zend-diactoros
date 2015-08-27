@@ -31,7 +31,7 @@ class RedirectResponse extends Response
      * @param int $status Integer status code for the redirect; 302 by default.
      * @param array $headers Array of headers to use at initialization.
      */
-    public function __construct($uri, $status = 302, array $headers = [])
+    public function __construct($uri, $status = 302, array $headers = array())
     {
         if (! is_string($uri) && ! $uri instanceof UriInterface) {
             throw new InvalidArgumentException(sprintf(
@@ -41,7 +41,7 @@ class RedirectResponse extends Response
             ));
         }
 
-        $headers['location'] = [(string) $uri];
+        $headers['location'] = array((string) $uri);
         parent::__construct('php://temp', $status, $headers);
     }
 }

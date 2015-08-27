@@ -22,7 +22,7 @@ use Zend\Diactoros\Stream;
  */
 class JsonResponse extends Response
 {
-    use InjectContentTypeTrait;
+
 
     /**
      * Create a JSON response with the given data.
@@ -41,7 +41,7 @@ class JsonResponse extends Response
      * @param int $encodingOptions JSON encoding options to use.
      * @throws InvalidArgumentException if unable to encode the $data to JSON.
      */
-    public function __construct($data, $status = 200, array $headers = [], $encodingOptions = 15)
+    public function __construct($data, $status = 200, array $headers = array(), $encodingOptions = 15)
     {
         $body = new Stream('php://temp', 'wb+');
         $body->write($this->jsonEncode($data, $encodingOptions));
@@ -79,5 +79,24 @@ class JsonResponse extends Response
         }
 
         return $json;
+    }
+    /**
+     * Inject the provided Content-Type, if none is already present.
+     *
+     * @param string $contentType
+     * @param array $headers
+     * @return array Headers with injected Content-Type
+     */
+    private function injectContentType($contentType, array $headers)
+    {
+        $hasContentType = array_reduce(array_keys($headers), function ($carry, $item) {
+            return $carry ?: (strtolower($item) === 'content-type');
+        }, false);
+
+        if (! $hasContentType) {
+            $headers['content-type'] = array($contentType);
+        }
+
+        return $headers;
     }
 }

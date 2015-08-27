@@ -52,9 +52,11 @@ final class Serializer extends AbstractSerializer
         list($version, $status, $reasonPhrase) = self::getStatusLine($stream);
         list($headers, $body)                  = self::splitStream($stream);
 
-        return (new Response($body, $status, $headers))
+        $response = new Response($body, $status, $headers);
+        $response = $response
             ->withProtocolVersion($version)
             ->withStatus($status, $reasonPhrase);
+        return $response;
     }
 
     /**
@@ -106,6 +108,6 @@ final class Serializer extends AbstractSerializer
             throw new UnexpectedValueException('No status line detected');
         }
 
-        return [$matches['version'], $matches['status'], isset($matches['reason']) ? $matches['reason'] : ''];
+        return array($matches['version'], $matches['status'], isset($matches['reason']) ? $matches['reason'] : '');
     }
 }

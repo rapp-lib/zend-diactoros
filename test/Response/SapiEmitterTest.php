@@ -35,7 +35,8 @@ class SapiEmitterTest extends TestCase
 
     public function testEmitsResponseHeaders()
     {
-        $response = (new Response())
+        $response = (new Response());
+        $response = $response
             ->withStatus(200)
             ->withAddedHeader('Content-Type', 'text/plain');
         $response->getBody()->write('Content!');
@@ -49,7 +50,8 @@ class SapiEmitterTest extends TestCase
 
     public function testEmitsMessageBody()
     {
-        $response = (new Response())
+        $response = (new Response());
+        $response = $response
             ->withStatus(200)
             ->withAddedHeader('Content-Type', 'text/plain');
         $response->getBody()->write('Content!');

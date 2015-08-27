@@ -23,7 +23,7 @@ use Zend\Diactoros\Stream;
  */
 class HtmlResponse extends Response
 {
-    use InjectContentTypeTrait;
+
 
     /**
      * Create an HTML response.
@@ -36,7 +36,7 @@ class HtmlResponse extends Response
      * @param array $headers Array of headers to use at initialization.
      * @throws InvalidArgumentException if $html is neither a string or stream.
      */
-    public function __construct($html, $status = 200, array $headers = [])
+    public function __construct($html, $status = 200, array $headers = array())
     {
         parent::__construct(
             $this->createBody($html),
@@ -69,5 +69,25 @@ class HtmlResponse extends Response
         $body = new Stream('php://temp', 'wb+');
         $body->write($html);
         return $body;
+    }
+
+    /**
+     * Inject the provided Content-Type, if none is already present.
+     *
+     * @param string $contentType
+     * @param array $headers
+     * @return array Headers with injected Content-Type
+     */
+    private function injectContentType($contentType, array $headers)
+    {
+        $hasContentType = array_reduce(array_keys($headers), function ($carry, $item) {
+            return $carry ?: (strtolower($item) === 'content-type');
+        }, false);
+
+        if (! $hasContentType) {
+            $headers['content-type'] = array($contentType);
+        }
+
+        return $headers;
     }
 }

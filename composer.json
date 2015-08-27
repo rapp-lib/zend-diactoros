@@ -1,6 +1,6 @@
 {
-  "name": "zendframework/zend-diactoros",
-  "description": "PSR HTTP Message implementations",
+  "name": "deepfreeze/zend-diactoros",
+  "description": "Zend Diactoros for PHP 5.3.8-5.3.x. See zendframework/zend-diactoros for PHP 5.4+ support.",
   "type": "library",
   "license": "BSD-2-Clause",
   "keywords": [
@@ -8,10 +8,10 @@
     "psr",
     "psr-7"
   ],
-  "homepage": "https://github.com/zendframework/zend-diactoros",
+  "homepage": "https://github.com/deepfreeze/zend-diactoros",
   "support": {
-    "issues": "https://github.com/zendframework/zend-diactoros/issues",
-    "source": "https://github.com/zendframework/zend-diactoros"
+    "issues": "https://github.com/deepfreeze/zend-diactoros/issues",
+    "source": "https://github.com/deepfreeze/zend-diactoros"
   },
   "extra": {
     "branch-alias": {
@@ -20,7 +20,7 @@
     }
   },
   "require": {
-    "php": ">=5.4",
+    "php": "~5.3.8",
     "psr/http-message": "~1.0"
   },
   "require-dev": {

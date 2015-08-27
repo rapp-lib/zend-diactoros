@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Server-side HTTP request
@@ -30,17 +31,20 @@ use Psr\Http\Message\UploadedFileInterface;
  */
 class ServerRequest implements ServerRequestInterface
 {
-    use MessageTrait, RequestTrait;
+    /**
+     * @var ConcreteRequest
+     */
+    private $request;
 
     /**
      * @var array
      */
-    private $attributes = [];
+    private $attributes = array();
 
     /**
      * @var array
      */
-    private $cookieParams = [];
+    private $cookieParams = array();
 
     /**
      * @var null|array|object
@@ -50,7 +54,7 @@ class ServerRequest implements ServerRequestInterface
     /**
      * @var array
      */
-    private $queryParams = [];
+    private $queryParams = array();
 
     /**
      * @var array
@@ -72,17 +76,17 @@ class ServerRequest implements ServerRequestInterface
      * @throws InvalidArgumentException for any invalid value.
      */
     public function __construct(
-        array $serverParams = [],
-        array $uploadedFiles = [],
+        array $serverParams = array(),
+        array $uploadedFiles = array(),
         $uri = null,
         $method = null,
         $body = 'php://input',
-        array $headers = []
+        array $headers = array()
     ) {
         $this->validateUploadedFiles($uploadedFiles);
 
         $body = $this->getStream($body);
-        $this->initialize($uri, $method, $body, $headers);
+        $this->request = new ConcreteRequest($uri, $method, $body, $headers);
         $this->serverParams  = $serverParams;
         $this->uploadedFiles = $uploadedFiles;
     }
@@ -222,10 +226,10 @@ class ServerRequest implements ServerRequestInterface
      */
     public function getMethod()
     {
-        if (empty($this->method)) {
+        if (!$this->request->getMethod()) {
             return 'GET';
         }
-        return $this->method;
+        return $this->request->getMethod();
     }
 
     /**
@@ -242,9 +246,9 @@ class ServerRequest implements ServerRequestInterface
      */
     public function withMethod($method)
     {
-        $this->validateMethod($method);
+        $method = strtoupper($method);
         $new = clone $this;
-        $new->method = $method;
+        $new->request = $this->request->withMethod($method);
         return $new;
     }
 
@@ -293,5 +297,99 @@ class ServerRequest implements ServerRequestInterface
                 throw new InvalidArgumentException('Invalid leaf in uploaded files structure');
             }
         }
+    }
+
+
+    public function getRequestTarget()
+    {
+        return $this->request->getRequestTarget();
+    }
+
+    public function withRequestTarget($requestTarget)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withRequestTarget($requestTarget);
+        return $new;
+    }
+
+    public function getUri()
+    {
+        return $this->request->getUri();
+    }
+
+    public function withUri(UriInterface $uri, $preserveHost = false)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withUri($uri, $preserveHost);
+        return $new;
+    }
+
+
+    public function getProtocolVersion()
+    {
+        return $this->request->getProtocolVersion();
+    }
+
+    public function withProtocolVersion($version)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withProtocolVersion($version);
+        return $new;
+    }
+
+    public function hasHeader($name)
+    {
+        return $this->request->hasHeader($name);
+    }
+
+
+    public function getHeaderLine($name)
+    {
+        return $this->request->getHeaderLine($name);
+    }
+
+    public function withHeader($name, $value)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withHeader($name, $value);
+        return $new;
+    }
+
+    public function withAddedHeader($name, $value)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withAddedHeader($name, $value);
+        return $new;
+    }
+
+    public function withoutHeader($name)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withoutHeader($name);
+        return $new;
+    }
+
+    public function getBody()
+    {
+        return $this->request->getBody();
+    }
+
+    public function withBody(StreamInterface $body)
+    {
+        $new = clone $this;
+        $new->request = $this->request->withBody($body);
+        return $new;
+    }
+
+
+    public function getHeaders()
+    {
+        return $this->request->getHeaders();
+    }
+
+
+    public function getHeader($name)
+    {
+        return $this->request->getHeader($name);
     }
 }

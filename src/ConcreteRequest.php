@@ -10,6 +10,8 @@
 namespace Zend\Diactoros;
 
 use InvalidArgumentException;
+use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
@@ -23,13 +25,14 @@ use Psr\Http\Message\UriInterface;
  * between both client-side and server-side requests, and each can then
  * use the headers functionality required by their implementations.
  *
- * @property array $headers
- * @property array $headerNames
- * @property StreamInterface $stream
- * @method bool hasHeader(string $header)
  */
-trait RequestTrait
+class ConcreteRequest implements RequestInterface
 {
+    /**
+     * @var Message
+     */
+    private $message;
+
     /**
      * @var string
      */
@@ -47,6 +50,11 @@ trait RequestTrait
      */
     private $uri;
 
+    public function __construct($uri = null, $method = null, $body = 'php://memory', array $headers = array())
+    {
+        $this->initialize($uri, $method);
+        $this->message = new Message($body, $headers);
+    }
     /**
      * Initialize request state.
      *
@@ -58,7 +66,7 @@ trait RequestTrait
      * @param array $headers Headers for the message, if any.
      * @throws InvalidArgumentException for any invalid value.
      */
-    private function initialize($uri = null, $method = null, $body = 'php://memory', array $headers = [])
+    private function initialize($uri = null, $method = null)
     {
         if (! $uri instanceof UriInterface && ! is_string($uri) && null !== $uri) {
             throw new InvalidArgumentException(
@@ -68,13 +76,6 @@ trait RequestTrait
 
         $this->validateMethod($method);
 
-        if (! is_string($body) && ! is_resource($body) && ! $body instanceof StreamInterface) {
-            throw new InvalidArgumentException(
-                'Body must be a string stream resource identifier, '
-                . 'an actual stream resource, '
-                . 'or a Psr\Http\Message\StreamInterface implementation'
-            );
-        }
 
         if (is_string($uri)) {
             $uri = new Uri($uri);
@@ -82,11 +83,7 @@ trait RequestTrait
 
         $this->method = $method ?: '';
         $this->uri    = $uri ?: new Uri();
-        $this->stream = ($body instanceof StreamInterface) ? $body : new Stream($body, 'wb+');
 
-        list($this->headerNames, $headers) = $this->filterHeaders($headers);
-        $this->assertHeaders($headers);
-        $this->headers = $headers;
     }
 
     /**
@@ -235,7 +232,7 @@ trait RequestTrait
         $new = clone $this;
         $new->uri = $uri;
 
-        if ($preserveHost && $this->hasHeader('Host')) {
+        if ($preserveHost && $this->message->hasHeader('Host')) {
             return $new;
         }
 
@@ -247,10 +244,7 @@ trait RequestTrait
         if ($uri->getPort()) {
             $host .= ':' . $uri->getPort();
         }
-
-        $new->headerNames['host'] = 'Host';
-        $new->headers['Host'] = [$host];
-
+        $new->message = $this->message->withHeader('Host', $host);
         return $new;
     }
 
@@ -281,29 +275,68 @@ trait RequestTrait
         }
     }
 
-    /**
-     * Retrieve the host from the URI instance
-     *
-     * @return string
-     */
-    private function getHostFromUri()
+    public function getProtocolVersion()
     {
-        $host  = $this->uri->getHost();
-        $host .= $this->uri->getPort() ? ':' . $this->uri->getPort() : '';
-        return $host;
+        return $this->message->getProtocolVersion();
     }
 
-    /**
-     * Ensure header names and values are valid.
-     *
-     * @param array $headers
-     * @throws InvalidArgumentException
-     */
-    private function assertHeaders(array $headers)
+    public function withProtocolVersion($version)
     {
-        foreach ($headers as $name => $headerValues) {
-            HeaderSecurity::assertValidName($name);
-            array_walk($headerValues, __NAMESPACE__ . '\HeaderSecurity::assertValid');
-        }
+        $new = clone $this;
+        $new->message = $this->message->withProtocolVersion($version);
+        return $new;
+    }
+
+    public function getHeaders()
+    {
+        return $this->message->getHeaders();
+    }
+
+    public function hasHeader($name)
+    {
+        return $this->message->hasHeader($name);
+    }
+
+    public function getHeader($name)
+    {
+        return $this->message->getHeader($name);
+    }
+
+    public function getHeaderLine($name)
+    {
+        return $this->message->getHeaderLine($name);
+    }
+
+    public function withHeader($name, $value)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withHeader($name, $value);
+        return $new;
+    }
+
+    public function withAddedHeader($name, $value)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withAddedHeader($name, $value);
+        return $new;
+    }
+
+    public function withoutHeader($name)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withoutHeader($name);
+        return $new;
+    }
+
+    public function getBody()
+    {
+        return $this->message->getBody();
+    }
+
+    public function withBody(StreamInterface $body)
+    {
+        $new = clone $this;
+        $new->message = $this->message->withBody($body);
+        return $new;
     }
 }

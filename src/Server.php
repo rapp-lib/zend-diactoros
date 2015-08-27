@@ -53,10 +53,13 @@ class Server
      * @param ResponseInterface $response
      */
     public function __construct(
-        callable $callback,
+        $callback,
         ServerRequestInterface $request,
         ResponseInterface $response
     ) {
+        if (!is_callable($callback)) {
+            throw new \RuntimeException('Parameter "callback" must be of type callable.');
+        }
         $this->callback = $callback;
         $this->request  = $request;
         $this->response = $response;
@@ -108,13 +111,16 @@ class Server
      * @return static
      */
     public static function createServer(
-        callable $callback,
+        $callback,
         array $server,
         array $query,
         array $body,
         array $cookies,
         array $files
     ) {
+        if (!is_callable($callback)) {
+            throw new \RuntimeException('Parameter "callback" must be of type callable.');
+        }
         $request  = ServerRequestFactory::fromGlobals($server, $query, $body, $cookies, $files);
         $response = new Response();
         return new static($callback, $request, $response);
@@ -134,10 +140,13 @@ class Server
      * @return static
      */
     public static function createServerFromRequest(
-        callable $callback,
+        $callback,
         ServerRequestInterface $request,
         ResponseInterface $response = null
     ) {
+        if (!is_callable($callback)) {
+            throw new \RuntimeException('Parameter "callback" must be of type callable.');
+        }
         if (! $response) {
             $response = new Response();
         }
@@ -156,8 +165,12 @@ class Server
      *
      * @param null|callable $finalHandler
      */
-    public function listen(callable $finalHandler = null)
+    public function listen($finalHandler = null)
     {
+        if (null !== $finalHandler && !is_callable($finalHandler)) {
+            $type = is_object($finalHandler) ? get_class($finalHandler) : gettype($finalHandler);
+            throw new \RuntimeException('Parameter must be of type callable. Type ' . $type . ' given');
+        };
         $callback = $this->callback;
 
         ob_start();
