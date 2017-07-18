@@ -1,5 +1,5 @@
 {
-  "name": "deepfreeze/zend-diactoros",
+  "name": "rapp-lib/zend-diactoros",
   "description": "Zend Diactoros for PHP 5.3.8-5.3.x. See zendframework/zend-diactoros for PHP 5.4+ support.",
   "type": "library",
   "license": "BSD-2-Clause",
@@ -20,7 +20,7 @@
     }
   },
   "require": {
-    "php": "~5.3.8",
+    "php": ">=5.3",
     "psr/http-message": "~1.0"
   },
   "require-dev": {
